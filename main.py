@@ -43,15 +43,17 @@ class DotPage(Screen):
         self.moving_dot = MovingDot()
         self.add_widget(self.moving_dot)
 
+        self.fob = open('./test.txt', 'a+')
+
     def count_down(self, *args):
         self.countText -= 1
-        print(self.count_label.text)
         self.count_label.text = str(self.countText)
         if self.countText <= 0:  # end of count down
             self.remove_widget(self.count_label)
             self.remove_widget(self.instruction_label)
             self.countText = 3
             self.count_label.text = str(self.countText)
+            self.fob = open('./test.txt', 'a+')
             Clock.schedule_interval(self.moving_dot.update, 1/30)
 
         # false will end the Clock.schedule_interval()
@@ -62,7 +64,7 @@ class MovingDot(Widget):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        self.ball_size = dp(13)
+        self.ball_size = dp(12)
         self.max_pos_x = Window.width - self.ball_size
         self.max_pos_y = Window.height - self.ball_size
         with self.canvas:
@@ -77,16 +79,17 @@ class MovingDot(Widget):
 
     def update(self, *args):
         x, y = self.ball.pos
-        self.ball.pos = (x, y+2)
-        # print(str(self.ball.pos))
-        # record position
+        app.dot_page.fob.write('%s, %s\n' % (str(int(x + self.ball_size/2)), str(int(y + self.ball_size/2))))
         # take picture
+        self.ball.pos = (x, y + 2)
         if y < self.max_pos_y:
             return True
         else:
+            app.dot_page.fob.close()
             app.screen_manager.current = "Start"
             app.dot_page.add_widget(app.dot_page.count_label)
             app.dot_page.add_widget(app.dot_page.instruction_label)
+            self.new_starting_point()
             return False
 
 
@@ -105,6 +108,8 @@ class MainApp(App):
         self.screen_manager.add_widget(screen)
 
         app.screen_manager.current = "Start"
+
+        self.fob = open('./test.txt', 'a+')
 
         return self.screen_manager
 
