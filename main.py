@@ -45,12 +45,13 @@ class DotPage(Screen):
 
     def count_down(self, *args):
         self.countText -= 1
+        print(self.count_label.text)
         self.count_label.text = str(self.countText)
         if self.countText <= 0:  # end of count down
             self.remove_widget(self.count_label)
             self.remove_widget(self.instruction_label)
             self.countText = 3
-            self.count_label = str(self.countText)
+            self.count_label.text = str(self.countText)
             Clock.schedule_interval(self.moving_dot.update, 1/30)
 
         # false will end the Clock.schedule_interval()
@@ -77,13 +78,15 @@ class MovingDot(Widget):
     def update(self, *args):
         x, y = self.ball.pos
         self.ball.pos = (x, y+2)
-        print(str(self.ball.pos))
+        # print(str(self.ball.pos))
         # record position
         # take picture
         if y < self.max_pos_y:
             return True
         else:
             app.screen_manager.current = "Start"
+            app.dot_page.add_widget(app.dot_page.count_label)
+            app.dot_page.add_widget(app.dot_page.instruction_label)
             return False
 
 
