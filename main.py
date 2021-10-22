@@ -1,3 +1,6 @@
+import random
+from datetime import datetime
+
 from kivy.app import App
 from kivy.graphics import Ellipse, Color
 from kivy.metrics import dp
@@ -8,7 +11,6 @@ from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.widget import Widget
 from kivy.core.window import Window
 from kivy.clock import Clock
-import random
 
 
 class StartPage(Screen):
@@ -35,7 +37,6 @@ class DotPage(Screen):
                                        pos_hint={'center_x': 0.5, 'center_y': 0.65})
         self.add_widget(self.instruction_label)
 
-        self.iterations = 0
         self.count = 3
         self.count_label = Label(text=str(self.count),
                                  font_size='50',
@@ -45,18 +46,15 @@ class DotPage(Screen):
         self.moving_dot = MovingDot()
         self.add_widget(self.moving_dot)
 
-        self.fob = open('./test.txt', 'a+')
-
     def count_down(self, *args):
         self.count -= 1
         self.count_label.text = str(self.count)
         if self.count <= 0:  # end of count down
             self.remove_widget(self.count_label)
             self.remove_widget(self.instruction_label)
-            self.iterations += 1
             self.count = 3
             self.count_label.text = str(self.count)
-            self.fob = open('./test.txt', 'a+')
+            app.dot_page.fob = open('./coordinates.txt', 'a+')
             Clock.schedule_interval(self.moving_dot.update, 1/30)
 
         # false will end the Clock.schedule_interval()
@@ -86,9 +84,9 @@ class MovingDot(Widget):
         y_center = int(y + self.ball_size/2)
         # x and y coords are recorded in text file
         app.dot_page.fob.write('%s, %s\n' % (str(x_center), str(y_center)))
-        # image is saved with name "image-iterationNum-xcoord-ycoord.png
+        # image is saved with name "image-Year-Month-Day-Hr-Min-Sec-xcoord-ycoord.png
         app.camObj.export_to_png("./imageFolder/image-" +
-                                 str(app.dot_page.iterations) + "-" +
+                                 datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + "-" +
                                  str(x_center) + "-" +
                                  str(y_center) + ".png")
         self.ball.pos = (x, y + 2)
@@ -119,7 +117,7 @@ class MainApp(App):
 
         app.screen_manager.current = "Start"
 
-        self.fob = open('./test.txt', 'a+')
+        self.fob = open('./coordinates.txt', 'a+')
         self.camObj = Camera(play=True,
                              resolution=(256, 256),
                              size=(256, 256))
